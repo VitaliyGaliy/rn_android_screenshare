@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">ScreenShare</string>
+    <string name="title_activity_screen_share">ScreenShareActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="host">139.178.68.121</string>
+    <string name="port">3000</string>
+    <string name="action_settings">Options</string>
+    <string name="dialog_calling">%1$s is calling ……</string>
+    <string name="dialog_answer">Answer</string>
+    <string name="dialog_hangup">Hangup</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+</resources>
