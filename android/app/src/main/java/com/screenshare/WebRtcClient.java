@@ -7,6 +7,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.AudioSource;
 import org.webrtc.DataChannel;
+import org.webrtc.DefaultVideoDecoderFactory;
+import org.webrtc.DefaultVideoEncoderFactory;
+import org.webrtc.EglBase;
 import org.webrtc.IceCandidate;
 import org.webrtc.MediaConstraints;
 import org.webrtc.MediaStream;
@@ -30,6 +33,8 @@ import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
+//import static com.oney.WebRTCModule.EglUtils.rootEglBase;
+
 public class WebRtcClient {
 
     public static final String VIDEO_TRACK_ID = "ARDAMSv0";
@@ -48,6 +53,7 @@ public class WebRtcClient {
     VideoCapturer videoCapturer;
     MessageHandler messageHandler = new MessageHandler();
     Context mContext;
+    EglBase rootEglBase;
 
     /**
      * Implement this interface to be notified of events.
@@ -265,7 +271,7 @@ public class WebRtcClient {
 
         @Override
         public void onAddStream(MediaStream mediaStream) {
-            Log.d(TAG, "onAddStream " + mediaStream.label());
+//            Log.d(TAG, "onAddStream " + mediaStream.label());
             // remote streams are displayed from 1 to MAX_PEER (0 is localStream)
 //            mediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(mRemoteRender));
 //            mListener.onAddRemoteStream(mediaStream, endPoint + 1);
@@ -273,7 +279,7 @@ public class WebRtcClient {
 
         @Override
         public void onRemoveStream(MediaStream mediaStream) {
-            Log.d(TAG, "onRemoveStream " + mediaStream.label());
+//            Log.d(TAG, "onRemoveStream " + mediaStream.label());
             removePeer(id);
         }
 
@@ -315,10 +321,32 @@ public class WebRtcClient {
         mListener = listener;
         mPeerConnParams = params;
         videoCapturer = capturer;
-        PeerConnectionFactory.initializeAndroidGlobals(mContext, true, true,
-                params.videoCodecHwAcceleration);
-        factory = new PeerConnectionFactory();
-        String host = "http://" + context.getString(R.string.host) + ":" + context.getString(R.string.port) + "/";
+//        PeerConnectionFactory.initializeAndroidGlobals(mContext, true, true,
+//                params.videoCodecHwAcceleration);
+//        factory = new PeerConnectionFactory();
+        rootEglBase= EglBase.create();
+        PeerConnectionFactory.initialize(
+                PeerConnectionFactory.InitializationOptions.builder(mContext)
+                        .setFieldTrials("WebRTC-IntelVP8/Enabled")
+                        .createInitializationOptions()
+        );
+        PeerConnectionFactory.Options options= new PeerConnectionFactory.Options();
+        DefaultVideoEncoderFactory defaultVideoEncoderFactory = new DefaultVideoEncoderFactory(rootEglBase.getEglBaseContext(),  true,  true);
+        DefaultVideoDecoderFactory defaultVideoDecoderFactory = new DefaultVideoDecoderFactory(rootEglBase.getEglBaseContext());
+        factory = PeerConnectionFactory.builder()
+                .setOptions(options)
+                .setVideoEncoderFactory(defaultVideoEncoderFactory)
+                .setVideoDecoderFactory(defaultVideoDecoderFactory)
+                .createPeerConnectionFactory();
+
+
+
+
+
+
+
+
+                String host = "http://" + context.getString(R.string.host) + ":" + context.getString(R.string.port) + "/";
         try {
             mSocket = IO.socket(host);
         } catch (URISyntaxException e) {
@@ -402,14 +430,11 @@ public class WebRtcClient {
     private void initScreenCapturStream() {
         mLocalMediaStream = factory.createLocalMediaStream("ARDAMS");
         MediaConstraints videoConstraints = new MediaConstraints();
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(mPeerConnParams.videoHeight)));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(mPeerConnParams.videoWidth)));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(mPeerConnParams.videoFps)));
-        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(mPeerConnParams.videoFps)));
 
 //        VideoCapturer capturer = createScreenCapturer();
-        mVideoSource = factory.createVideoSource(videoCapturer);
-        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
+        mVideoSource = factory.createVideoSource(videoCapturer.isScreencast());
+//        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
+        videoCapturer.startCapture(1024,720,30);
         VideoTrack localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
         localVideoTrack.setEnabled(true);
         mLocalMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", mVideoSource));
