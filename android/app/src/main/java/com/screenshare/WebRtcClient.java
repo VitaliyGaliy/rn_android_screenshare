@@ -21,6 +21,7 @@ import org.webrtc.SessionDescription;
 import org.webrtc.VideoCapturer;
 import org.webrtc.VideoSource;
 import org.webrtc.VideoTrack;
+import org.webrtc.SurfaceTextureHelper;
 
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -428,15 +429,42 @@ public class WebRtcClient {
     }
 
     private void initScreenCapturStream() {
+//        mLocalMediaStream = factory.createLocalMediaStream("ARDAMS");
+//        MediaConstraints videoConstraints = new MediaConstraints();
+//
+////        VideoCapturer capturer = createScreenCapturer();
+        mVideoSource = factory.createVideoSource(videoCapturer.isScreencast());
+////        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
+//        videoCapturer.startCapture(1024,720,30);
+//        VideoTrack localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
+//        localVideoTrack.setEnabled(true);
+//        mLocalMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", mVideoSource));
+////        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
+////        mLocalMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
+////        mLocalMediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(mLocalRender));
+////        mListener.onLocalStream(mLocalMediaStream);
+//        mListener.onStatusChanged("STREAMING");
+
+
+        EglBase.Context eglContext = com.oney.WebRTCModule.EglUtils.getRootEglBaseContext();
+        SurfaceTextureHelper surfaceTextureHelper =
+                SurfaceTextureHelper.create("CaptureThread", eglContext);
+
+
         mLocalMediaStream = factory.createLocalMediaStream("ARDAMS");
         MediaConstraints videoConstraints = new MediaConstraints();
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(mPeerConnParams.videoHeight)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(mPeerConnParams.videoWidth)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(mPeerConnParams.videoFps)));
+        videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(mPeerConnParams.videoFps)));
 
-//        VideoCapturer capturer = createScreenCapturer();
-        mVideoSource = factory.createVideoSource(videoCapturer.isScreencast());
-//        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
-        videoCapturer.startCapture(1024,720,30);
-        VideoTrack localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
-        localVideoTrack.setEnabled(true);
+
+        VideoSource source = factory.createVideoSource(videoCapturer.isScreencast());
+        videoCapturer.initialize(surfaceTextureHelper, mContext,source.getCapturerObserver() );
+
+        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
+//        VideoTrack localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
+//        localVideoTrack.setEnabled(true);
         mLocalMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", mVideoSource));
 //        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
 //        mLocalMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
@@ -444,6 +472,7 @@ public class WebRtcClient {
 //        mListener.onLocalStream(mLocalMediaStream);
         mListener.onStatusChanged("STREAMING");
     }
+   }
 
 
-}
+
