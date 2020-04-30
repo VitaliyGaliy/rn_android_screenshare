@@ -42,10 +42,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ScreenShareActivity"
-            android:label="@string/title_activity_screen_share"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
             android:label="@string/app_name"
