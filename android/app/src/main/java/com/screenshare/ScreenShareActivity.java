@@ -124,9 +124,9 @@ public class ScreenShareActivity extends Activity implements WebRtcClient.RtcLis
 //            }
 //        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startScreenCapture();
-        } else {
-            Log.i(TAG, "PackageManager.PERMISSION_GRANTED " +PackageManager.PERMISSION_GRANTED);
+                startScreenCapture();
+            } else {
+                Log.i(TAG, "PackageManager.PERMISSION_GRANTED " +PackageManager.PERMISSION_GRANTED);
             init();
         }
     }
