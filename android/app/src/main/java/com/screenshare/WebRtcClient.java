@@ -462,14 +462,18 @@ public class WebRtcClient {
         VideoSource source = factory.createVideoSource(videoCapturer.isScreencast());
         videoCapturer.initialize(surfaceTextureHelper, mContext,source.getCapturerObserver() );
 
-        videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
+         videoCapturer.startCapture(mPeerConnParams.videoWidth, mPeerConnParams.videoHeight, mPeerConnParams.videoFps);
 //        VideoTrack localVideoTrack = factory.createVideoTrack(VIDEO_TRACK_ID, mVideoSource);
 //        localVideoTrack.setEnabled(true);
-        mLocalMediaStream.addTrack(factory.createVideoTrack("ARDAMSv0", mVideoSource));
+        VideoTrack track = factory.createVideoTrack("ARDAMSv0", mVideoSource);
+        track.setEnabled(true);
+        mLocalMediaStream.addTrack(track);
 //        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
 //        mLocalMediaStream.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 //        mLocalMediaStream.videoTracks.get(0).addRenderer(new VideoRenderer(mLocalRender));
 //        mListener.onLocalStream(mLocalMediaStream);
+        Log.i(TAG, "videoCapturer " + videoCapturer);
+        Log.i(TAG, "track " + track);
         mListener.onStatusChanged("STREAMING");
     }
    }
